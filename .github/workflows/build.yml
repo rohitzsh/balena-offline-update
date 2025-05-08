@@ -9,7 +9,8 @@ on:
 jobs:
   build:
     runs-on: self-hosted
-
+    env:
+      YOCTO_ASSET_BASEDIR: /data/yocto-assets
     steps:
     - uses: actions/checkout@v4
       with:

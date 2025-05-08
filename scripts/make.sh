@@ -6,6 +6,11 @@ cd "$(dirname "$0")"
 IMAGE_NAME=balena-offline-update
 VERSION=latest
 
+if [ -z $YOCTO_ASSET_BASEDIR ]; then
+    echo "YOCTO_ASSET_BASEDIR env is not defined using project root as base directory"
+    YOCTO_ASSET_BASEDIR="${PWD}/.."
+fi
+
 opt="$1"
 
 build_image() {
@@ -24,12 +29,16 @@ docker_cmd() {
     local cmd=$*
     echo "running yocto docker builder"
     mkdir -p "${PWD}/../build"
+    mkdir -p "${YOCTO_ASSET_BASEDIR}/sstate-cache"
+    mkdir -p "${YOCTO_ASSET_BASEDIR}/downloads"
     docker run --rm \
         --privileged \
         --cap-add=ALL \
         --device=/dev/kvm \
         -e BUILDER_UID="$(id -u)" \
         -e BUILDER_GID="$(id -g)" \
+        --volume "${YOCTO_ASSET_BASEDIR}/sstate-cache":/opt/yocto/sstate-cache \
+        --volume "${YOCTO_ASSET_BASEDIR}/downloads":/opt/yocto/downloads \
         --volume "${PWD}/../build":/opt/yocto/build \
         --volume "${PWD}/../layers":/opt/yocto/layers \
         --volume "${PWD}/../conf":/opt/yocto/conf \
@@ -43,12 +52,16 @@ docker_cmd_interactive() {
     local cmd=$*
     echo "running interactive yocto docker builder"
     mkdir -p "${PWD}/../build"
+    mkdir -p "${YOCTO_ASSET_BASEDIR}/sstate-cache"
+    mkdir -p "${YOCTO_ASSET_BASEDIR}/downloads"
     docker run --rm -it \
         --privileged \
         --cap-add=ALL \
         --device=/dev/kvm \
         -e BUILDER_UID="$(id -u)" \
         -e BUILDER_GID="$(id -g)" \
+        --volume "${YOCTO_ASSET_BASEDIR}/sstate-cache":/opt/yocto/sstate-cache \
+        --volume "${YOCTO_ASSET_BASEDIR}/downloads":/opt/yocto/downloads \
         --volume "${PWD}/../build":/opt/yocto/build \
         --volume "${PWD}/../layers":/opt/yocto/layers \
         --volume "${PWD}/../conf":/opt/yocto/conf \
@@ -59,11 +72,8 @@ docker_cmd_interactive() {
 }
 
 clean_build() {
-    for item in build/*; do
-        if [[ ! "$item" =~ (downloads) ]]; then
-            rm -rf "$item"
-        fi
-    done
+    rm -rf ${YOCTO_ASSET_BASEDIR}/sstate-cache
+    rm -rf ${PWD}/../build
 }
 
 if [ -z "$opt" ]; then
