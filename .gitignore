@@ -1,2 +1,4 @@
 build
 .aider*
+state-cache
+downloads
