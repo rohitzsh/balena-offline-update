@@ -24,6 +24,25 @@ docker_cmd() {
     local cmd=$*
     echo "running yocto docker builder"
     mkdir -p "${PWD}/../build"
+    docker run --rm \
+        --privileged \
+        --cap-add=ALL \
+        --device=/dev/kvm \
+        -e BUILDER_UID="$(id -u)" \
+        -e BUILDER_GID="$(id -g)" \
+        --volume "${PWD}/../build":/opt/yocto/build \
+        --volume "${PWD}/../layers":/opt/yocto/layers \
+        --volume "${PWD}/../conf":/opt/yocto/conf \
+        --volume /lib/modules:/lib/modules \
+        --entrypoint /opt/yocto/entrypoint.sh \
+        --name $IMAGE_NAME ${IMAGE_NAME}:${VERSION} \
+        "$cmd"
+}
+
+docker_cmd_interactive() {
+    local cmd=$*
+    echo "running interactive yocto docker builder"
+    mkdir -p "${PWD}/../build"
     docker run --rm -it \
         --privileged \
         --cap-add=ALL \
@@ -66,7 +85,7 @@ case "$opt" in
     ;;
 "debug")
     build_image
-    docker_cmd bash
+    docker_cmd_interactive bash
     ;;
 "clean")
     clean_build
@@ -75,6 +94,6 @@ case "$opt" in
     docker_cmd runqemu ramfs genericx86-64 nographic serial
     ;;
 *)
-    docker_cmd "$@"
+    docker_cmd_interactive "$@"
     ;;
 esac
