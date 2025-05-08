@@ -1,0 +1,7 @@
+# short-description: Custom image with data partition using all remaining space
+# long-description: Creates a disk image with rootfs and data partition using all remaining space
+part /boot --source bootimg-efi --sourceparams="loader=grub-efi" --ondisk sda --label boot --active --size=128M --align 1024
+part / --source rootfs --ondisk sda --fstype=ext4 --label root --size=1G --align 1024
+part /data --ondisk sda --fstype=ext4 --label data --size=2G --align 1024
+
+bootloader --ptable gpt --timeout=5 --append="rootfstype=ext4 console=ttyS0,115200 console=tty0"

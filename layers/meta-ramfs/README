@@ -1,0 +1,21 @@
+This README file contains information on the contents of the meta-ramfs layer.
+
+Please see the corresponding sections below for details.
+
+Patches
+=======
+
+Please submit any patches against the meta-ramfs layer to:
+
+Maintainer: Rohit Sharma <rohitsharmazsh@gmail.com>
+
+Table of Contents
+=================
+
+  I. Adding the meta-ramfs layer to your build
+
+I. Adding the meta-ramfs layer to your build
+=================================================
+
+Run 'bitbake-layers add-layer meta-ramfs'
+
